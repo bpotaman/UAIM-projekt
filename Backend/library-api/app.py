@@ -1,8 +1,12 @@
 import os
-from flask import Flask, jsonify
+from flask import Flask, jsonify, request
 from flask_sqlalchemy import SQLAlchemy
+from flask_mail import Mail, Message
 from datetime import date
 from werkzeug.security import generate_password_hash, check_password_hash
+print(generate_password_hash("testpass"))
+
+# Database config %------------------------------------------------------------------------------------------------------------------------------
 
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get(
@@ -12,7 +16,19 @@ app.config['COMMIT_ON_TEARDOWN'] = True
 
 db = SQLAlchemy(app)
 
+# Mail config %-------------------------------------------------------------------------------------------------------------------------------
+
+app.config['MAIL_SERVER'] = 'smtp.example.com'
+app.config['MAIL_PORT'] = 587
+app.config['MAIL_USERNAME'] = 'your@email.com'
+app.config['MAIL_PASSWORD'] = 'yourpassword'
+app.config['MAIL_USE_TLS'] = True
+
+mail = Mail(app)
+
 # Models %-------------------------------------------------------------------------------------------------------------------------------------
+
+# TODO: 3 modele wydaje się mało, trzeba zdecydować czy to ok
 
 class User(db.Model):
     """
@@ -23,7 +39,7 @@ class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(80), unique=True, nullable=False) # Unikalna nazwa użytkownika
     email = db.Column(db.String(120), unique=True, nullable=False) # Unikalny email użytkownika
-    password_hash = db.Column(db.String(128), nullable=False) # Hasz hasła
+    password_hash = db.Column(db.Text, nullable=False) # Hasz hasła - hashowany za pomocą scrypt hash algorithm
 
     loans = db.relationship('Loan', back_populates='user')
 
@@ -74,28 +90,29 @@ class Loan(db.Model):
 
 # Database Populate %--------------------------------------------------------------------------------------------------------------------------
 
+# TODO: Czy w ogóle potrzebujemy tej funkcji? Jak dodamy dane wejściowe?
+
 def populate_db():
     db.drop_all()
     db.create_all()
 
 # API Functions %------------------------------------------------------------------------------------------------------------------------------
 
-@app.route('/api/users', methods=['GET'])
-def get_users():
-    """
-    Endpoint zwracający listę użytkowników.
-    """
-    users = User.query.all()
-    return jsonify([{'id': user.id,
-                     'username': user.username,
-                     'email': user.email
-                     } for user in users])
-
 @app.route('/api/books', methods=['GET'])
 def get_books():
     """
     Endpoint zwracający listę książek.
     """
+    author = request.args.get('author')
+    title = request.args.get('title')
+    year = request.args.get('year')
+    query = Book.query
+    if author:
+        query = query.filter(Book.author.ilike(f'%{author}%'))
+    if title:
+        query = query.filter(Book.title.ilike(f'%{title}%'))
+    if year:
+        query = query.filter_by(release_year=year)
     books = Book.query.all()
     return jsonify([{'id': book.id,
                      'title': book.title,
@@ -103,11 +120,91 @@ def get_books():
                      'release_year': book.release_year
                      } for book in books])
 
-# Testy %--------------------------------------------------------------------------------------------------------------------------------------
+@app.route('/api/register', methods=['POST'])
+def register():
+    data = request.get_json()
+    user = User(username=data['username'], email=data['email'])
+    user.set_password(data['password'])
+    db.session.add(user)
+    db.session.commit()
+    return jsonify({'message': 'User registered'}), 201
+
+@app.route('/api/login', methods=['POST'])
+def login():
+    data = request.get_json()
+    user = User.query.filter_by(username=data['username']).first()
+    if user and user.check_password(data['password']):
+        # Tu możesz zwrócić token lub info o sukcesie
+        return jsonify({'message': 'Login successful'})
+    return jsonify({'message': 'Invalid credentials'}), 401
+
+@app.route('/api/loans', methods=['POST'])
+def borrow_book():
+    data = request.get_json()
+    loan = Loan(
+        user_id=data['user_id'],
+        book_id=data['book_id'],
+        loan_date=date.today(),
+        due_date=data['due_date']
+    )
+    db.session.add(loan)
+    db.session.commit()
+    user = User.query.get(data['user_id'])
+    book = Book.query.get(data['book_id'])
+    if user and book:
+        send_confirmation_email(
+            user.email,
+            'Book Succesfully Borrowed',
+            f'You have borrowed "{book.title}" by {book.author}. Due date: {loan.due_date}. Do not forget to return it on time!'
+        )
+    return jsonify({'message': 'Book borrowed'}), 201
+
+@app.route('/api/loans/<int:loan_id>/return', methods=['PUT'])
+def return_book(loan_id):
+    loan = Loan.query.get(loan_id)
+    if loan:
+        loan.return_date = date.today()
+        db.session.commit()
+        user = User.query.get(loan.user_id)
+        book = Book.query.get(loan.book_id)
+        if user and book:
+            send_confirmation_email(
+                user.email,
+                'Book Successfully Returned',
+                f'You have returned "{book.title}" by {book.author}. Thank you for visiting BookNest public library! Please leave a review!'
+            )
+        return jsonify({'message': 'Book returned'})
+    return jsonify({'message': 'Loan not found'}), 404
+
+# Mail Functions %-----------------------------------------------------------------------------------------------------------------------------
+
+def send_confirmation_email(user_email, subject, body):
+    msg = Message(subject, recipients=[user_email], body=body)
+    mail.send(msg)
+
+def send_due_reminders():
+    today = date.today()
+    overdue_loans = Loan.query.filter(
+        Loan.due_date < today,
+        Loan.return_date == None
+    ).all()
+    for loan in overdue_loans:
+        user = User.query.get(loan.user_id)
+        book = Book.query.get(loan.book_id)
+        if user and book:
+            send_confirmation_email(
+                user.email,
+                "Przypomnienie o terminie zwrotu książki",
+                f"Przekroczyłeś termin zwrotu książki '{book.title}'. Prosimy o jej zwrot!"
+            )
 
 # Routes %-------------------------------------------------------------------------------------------------------------------------------------
 
+# TODO: Dodaj stronę główną api, nic ambitnego
+
 # App context and main %-----------------------------------------------------------------------------------------------------------------------
+
+# TODO: zmień tutaj maina na coś co będzie lepiej działało w dockerze
 
 # @app.shell_context_processor
 # def make_shell_context():
