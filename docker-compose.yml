@@ -1,0 +1,26 @@
+services:
+  db:
+    image: postgres:16
+    restart: always
+    environment:
+      POSTGRES_DB: biblioteka
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: UETuCwPapitksT9qmu3Y
+    ports:
+      - "5432:5432"
+    volumes:
+      - db_data:/var/lib/postgresql/data
+
+  backend:
+    build: ./Backend/library-api
+    depends_on:
+      - db
+    environment:
+      DATABASE_URL: postgresql://postgres:UETuCwPapitksT9qmu3Y@db:5432/biblioteka
+    ports:
+      - "5000:5000"
+    volumes:
+      - ./Backend/library-api:/app
+
+volumes:
+  db_data:
