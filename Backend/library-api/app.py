@@ -198,9 +198,15 @@ def send_due_reminders():
                 f"Przekroczyłeś termin zwrotu książki '{book.title}'. Prosimy o jej zwrot!"
             )
 
+# TODO: 
+
 # Routes %-------------------------------------------------------------------------------------------------------------------------------------
 
 # TODO: Dodaj stronę główną api, nic ambitnego
+
+@app.route('/')
+def index():
+    return jsonify({'message': 'Welcome to the BookNest public library API!'})
 
 # App context and main %-----------------------------------------------------------------------------------------------------------------------
 
@@ -215,4 +221,4 @@ if __name__ == '__main__':
         # db.drop_all()
         # db.create_all()
         populate_db()
-    app.run(debug=True)
+    app.run(host="0.0.0.0", debug=True)
