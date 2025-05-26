@@ -8,25 +8,124 @@ print(generate_password_hash("testpass"))
 
 # Database config %------------------------------------------------------------------------------------------------------------------------------
 
-app = Flask(__name__)
-app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get(
-    'DATABASE_URL',
-    'postgresql://postgres:UETuCwPapitksT9qmu3Y@localhost:5432/biblioteka')
-app.config['COMMIT_ON_TEARDOWN'] = True
+db = SQLAlchemy()
+mail = Mail()
 
-db = SQLAlchemy(app)
+def create_app(test_config=None):
+    app = Flask(__name__)
+    app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get(
+        'DATABASE_URL',
+        'postgresql://postgres:UETuCwPapitksT9qmu3Y@localhost:5432/biblioteka'
+    )
+    app.config['COMMIT_ON_TEARDOWN'] = True
+    app.config['MAIL_SERVER'] = 'smtp.example.com'
+    app.config['MAIL_PORT'] = 587
+    app.config['MAIL_USERNAME'] = 'your@email.com'
+    app.config['MAIL_PASSWORD'] = 'yourpassword'
+    app.config['MAIL_USE_TLS'] = True
+    if test_config:
+        app.config.update(test_config)
+    db.init_app(app)
+    mail.init_app(app)
+    # Routes %---------------------------------------------------------------------------------------------------------------------------------------
 
-# Mail config %-------------------------------------------------------------------------------------------------------------------------------
+    # TODO: Dodaj stronę główną api, nic ambitnego
 
-app.config['MAIL_SERVER'] = 'smtp.example.com'
-app.config['MAIL_PORT'] = 587
-app.config['MAIL_USERNAME'] = 'your@email.com'
-app.config['MAIL_PASSWORD'] = 'yourpassword'
-app.config['MAIL_USE_TLS'] = True
+    @app.route('/')
+    def index():
+        return jsonify({'message': 'Welcome to the BookNest public library API!'})
 
-mail = Mail(app)
+    # App context %----------------------------------------------------------------------------------------------------------------------------------
 
-# Models %-------------------------------------------------------------------------------------------------------------------------------------
+    # TODO: zmień tutaj maina na coś co będzie lepiej działało w dockerze
+
+    # @app.shell_context_processor
+    # def make_shell_context():
+    #     return {'db': db, 'User': User, 'Book': Book, 'Loan': Loan}
+    
+    # API Functions %--------------------------------------------------------------------------------------------------------------------------------
+
+    @app.route('/api/books', methods=['GET'])
+    def get_books():
+        """
+        Endpoint zwracający listę książek.
+        """
+        author = request.args.get('author')
+        title = request.args.get('title')
+        year = request.args.get('year')
+        query = Book.query
+        if author:
+            query = query.filter(Book.author.ilike(f'%{author}%'))
+        if title:
+            query = query.filter(Book.title.ilike(f'%{title}%'))
+        if year:
+            query = query.filter_by(release_year=year)
+        books = Book.query.all()
+        return jsonify([{'id': book.id,
+                        'title': book.title,
+                        'author': book.author,
+                        'release_year': book.release_year
+                        } for book in books])
+
+    @app.route('/api/register', methods=['POST'])
+    def register():
+        data = request.get_json()
+        user = User(username=data['username'], email=data['email'])
+        user.set_password(data['password'])
+        db.session.add(user)
+        db.session.commit()
+        return jsonify({'message': 'User registered'}), 201
+
+    @app.route('/api/login', methods=['POST'])
+    def login():
+        data = request.get_json()
+        user = User.query.filter_by(username=data['username']).first()
+        if user and user.check_password(data['password']):
+            # Tu możesz zwrócić token lub info o sukcesie
+            return jsonify({'message': 'Login successful'})
+        return jsonify({'message': 'Invalid credentials'}), 401
+
+    @app.route('/api/loans', methods=['POST'])
+    def borrow_book():
+        data = request.get_json()
+        loan = Loan(
+            user_id=data['user_id'],
+            book_id=data['book_id'],
+            loan_date=date.today(),
+            due_date=data['due_date']
+        )
+        db.session.add(loan)
+        db.session.commit()
+        user = User.query.get(data['user_id'])
+        book = Book.query.get(data['book_id'])
+        if user and book:
+            send_confirmation_email(
+                user.email,
+                'Book Succesfully Borrowed',
+                f'You have borrowed "{book.title}" by {book.author}. Due date: {loan.due_date}. Do not forget to return it on time!'
+            )
+        return jsonify({'message': 'Book borrowed'}), 201
+
+    @app.route('/api/loans/<int:loan_id>/return', methods=['PUT'])
+    def return_book(loan_id):
+        loan = Loan.query.get(loan_id)
+        if loan:
+            loan.return_date = date.today()
+            db.session.commit()
+            user = User.query.get(loan.user_id)
+            book = Book.query.get(loan.book_id)
+            if user and book:
+                send_confirmation_email(
+                    user.email,
+                    'Book Successfully Returned',
+                    f'You have returned "{book.title}" by {book.author}. Thank you for visiting BookNest public library! Please leave a review!'
+                )
+            return jsonify({'message': 'Book returned'})
+        return jsonify({'message': 'Loan not found'}), 404
+    
+    return app
+
+# Models %-------------------------------------------------------------------------------------------------------------------------------------------
 
 # TODO: 3 modele wydaje się mało, trzeba zdecydować czy to ok
 
@@ -62,6 +161,7 @@ class Book(db.Model):
     title = db.Column(db.String(120), nullable=False) # Tytuł książki
     author = db.Column(db.String(80), nullable=False) # Autor książki
     release_year = db.Column(db.Integer, nullable=False) # Rok wydania
+    # TODO: dodaj pole do przechowywania okładki książki, np. URL do okładki
 
     loans = db.relationship('Loan', back_populates='book')
 
@@ -88,7 +188,7 @@ class Loan(db.Model):
         return f'<Loan {self.id}: User {self.user_id} Book {self.book_id}>'
 
 
-# Database Populate %--------------------------------------------------------------------------------------------------------------------------
+# Database Populate %--------------------------------------------------------------------------------------------------------------------------------
 
 # TODO: Czy w ogóle potrzebujemy tej funkcji? Jak dodamy dane wejściowe?
 
@@ -96,87 +196,7 @@ def populate_db():
     db.drop_all()
     db.create_all()
 
-# API Functions %------------------------------------------------------------------------------------------------------------------------------
-
-@app.route('/api/books', methods=['GET'])
-def get_books():
-    """
-    Endpoint zwracający listę książek.
-    """
-    author = request.args.get('author')
-    title = request.args.get('title')
-    year = request.args.get('year')
-    query = Book.query
-    if author:
-        query = query.filter(Book.author.ilike(f'%{author}%'))
-    if title:
-        query = query.filter(Book.title.ilike(f'%{title}%'))
-    if year:
-        query = query.filter_by(release_year=year)
-    books = Book.query.all()
-    return jsonify([{'id': book.id,
-                     'title': book.title,
-                     'author': book.author,
-                     'release_year': book.release_year
-                     } for book in books])
-
-@app.route('/api/register', methods=['POST'])
-def register():
-    data = request.get_json()
-    user = User(username=data['username'], email=data['email'])
-    user.set_password(data['password'])
-    db.session.add(user)
-    db.session.commit()
-    return jsonify({'message': 'User registered'}), 201
-
-@app.route('/api/login', methods=['POST'])
-def login():
-    data = request.get_json()
-    user = User.query.filter_by(username=data['username']).first()
-    if user and user.check_password(data['password']):
-        # Tu możesz zwrócić token lub info o sukcesie
-        return jsonify({'message': 'Login successful'})
-    return jsonify({'message': 'Invalid credentials'}), 401
-
-@app.route('/api/loans', methods=['POST'])
-def borrow_book():
-    data = request.get_json()
-    loan = Loan(
-        user_id=data['user_id'],
-        book_id=data['book_id'],
-        loan_date=date.today(),
-        due_date=data['due_date']
-    )
-    db.session.add(loan)
-    db.session.commit()
-    user = User.query.get(data['user_id'])
-    book = Book.query.get(data['book_id'])
-    if user and book:
-        send_confirmation_email(
-            user.email,
-            'Book Succesfully Borrowed',
-            f'You have borrowed "{book.title}" by {book.author}. Due date: {loan.due_date}. Do not forget to return it on time!'
-        )
-    return jsonify({'message': 'Book borrowed'}), 201
-
-@app.route('/api/loans/<int:loan_id>/return', methods=['PUT'])
-def return_book(loan_id):
-    loan = Loan.query.get(loan_id)
-    if loan:
-        loan.return_date = date.today()
-        db.session.commit()
-        user = User.query.get(loan.user_id)
-        book = Book.query.get(loan.book_id)
-        if user and book:
-            send_confirmation_email(
-                user.email,
-                'Book Successfully Returned',
-                f'You have returned "{book.title}" by {book.author}. Thank you for visiting BookNest public library! Please leave a review!'
-            )
-        return jsonify({'message': 'Book returned'})
-    return jsonify({'message': 'Loan not found'}), 404
-
-# Mail Functions %-----------------------------------------------------------------------------------------------------------------------------
+# Mail Functions %-----------------------------------------------------------------------------------------------------------------------------------
 
 def send_confirmation_email(user_email, subject, body):
     msg = Message(subject, recipients=[user_email], body=body)
@@ -198,25 +218,12 @@ def send_due_reminders():
                 f"Przekroczyłeś termin zwrotu książki '{book.title}'. Prosimy o jej zwrot!"
             )
 
-# TODO: 
+# TODO: dorób wysyłanie przypomnień o terminie zwrotu książki
 
-# Routes %-------------------------------------------------------------------------------------------------------------------------------------
-
-# TODO: Dodaj stronę główną api, nic ambitnego
-
-@app.route('/')
-def index():
-    return jsonify({'message': 'Welcome to the BookNest public library API!'})
-
-# App context and main %-----------------------------------------------------------------------------------------------------------------------
-
-# TODO: zmień tutaj maina na coś co będzie lepiej działało w dockerze
-
-# @app.shell_context_processor
-# def make_shell_context():
-#     return {'db': db, 'User': User, 'Book': Book, 'Loan': Loan}
+# Main %---------------------------------------------------------------------------------------------------------------------------------------------
 
 if __name__ == '__main__':
+    app = create_app()
     with app.app_context():
         # db.drop_all()
         # db.create_all()
