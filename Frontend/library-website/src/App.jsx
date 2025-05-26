@@ -3,7 +3,6 @@ import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import LoginPage from "./endpoints/LoginPage";
 import RegisterPage from "./endpoints/RegisterPage";
 
-
 const App = () => {
     return ( 
         <Router>

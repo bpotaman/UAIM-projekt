@@ -1,6 +1,7 @@
 import Book from './Book'
 import "../css/Book.css"
 
+// komponent do wyszukiwania książek
 function List(props) {
 
     const name_match = (book) => book.name.toLowerCase().includes(props.input)
