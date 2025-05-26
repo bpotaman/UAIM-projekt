@@ -4,13 +4,13 @@ import "../css/Book.css"
 // komponent do wyszukiwania książek
 function List(props) {
 
-    const name_match = (book) => book.name.toLowerCase().includes(props.input)
+    const title_match = (book) => book.title.toLowerCase().includes(props.input)
 
-    const filteredBooks = props.books.filter(name_match)
+    const filteredBooks = props.books.filter(title_match)
 
     return (
         <div className="searched-books">
-            {filteredBooks.map(book => <Book img_path={book.image} book_name={book.name} key={book.id}/>)}
+            {filteredBooks.map(book => <Book img_path={book.image} book_title={book.title} key={book.id}/>)}
         </div>
     )
 }
