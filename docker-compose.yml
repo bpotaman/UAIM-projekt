@@ -22,5 +22,14 @@ services:
     volumes:
       - ./Backend/library-api:/app
 
+  frontend:
+    build: ./Frontend/library-website
+    depends_on:
+      - backend
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./Frontend/library-website:/app
+
 volumes:
   db_data:
