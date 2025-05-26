@@ -195,6 +195,22 @@ class Loan(db.Model):
 def populate_db():
     db.drop_all()
     db.create_all()
+    
+
+    # Dodaj przykładowych użytkowników
+    user1 = User(username="alice", email="alice@example.com")
+    user1.set_password("alicepass")
+    user2 = User(username="bob", email="bob@example.com")
+    user2.set_password("bobpass")
+    db.session.add_all([user1, user2])
+
+    # Dodaj przykładowe książki
+    book1 = Book(title="Wiedźmin", author="Andrzej Sapkowski", release_year=1993)
+    book2 = Book(title="Lalka", author="Bolesław Prus", release_year=1890)
+    book3 = Book(title="Pan Tadeusz", author="Adam Mickiewicz", release_year=1834)
+    db.session.add_all([book1, book2, book3])
+
+    db.session.commit()
 
 # Mail Functions %-----------------------------------------------------------------------------------------------------------------------------------
 
