@@ -4,6 +4,7 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_mail import Mail, Message
 from datetime import date
 from werkzeug.security import generate_password_hash, check_password_hash
+from flask_cors import CORS
 print(generate_password_hash("testpass"))
 
 # Database config %------------------------------------------------------------------------------------------------------------------------------
@@ -13,6 +14,7 @@ mail = Mail()
 
 def create_app(test_config=None):
     app = Flask(__name__)
+    CORS(app, resources={r"/api/*": {"origins": "http://localhost:3000"}})
     app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get(
         'DATABASE_URL',
         'postgresql://postgres:UETuCwPapitksT9qmu3Y@localhost:5432/biblioteka'
