@@ -14,7 +14,8 @@ mail = Mail()
 
 def create_app(test_config=None):
     app = Flask(__name__)
-    CORS(app, resources={r"/api/*": {"origins": "http://localhost:3000"}})
+    CORS(app, supports_credentials=True, resources={r"/api/*": {"origins": "http://localhost:3000"}})
+    app.config['CORS_HEADERS'] = 'Content-Type'
     app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get(
         'DATABASE_URL',
         'postgresql://postgres:UETuCwPapitksT9qmu3Y@localhost:5432/biblioteka'
@@ -69,6 +70,7 @@ def create_app(test_config=None):
                         'release_year': book.release_year
                         } for book in books])
 
+
     @app.route('/api/register', methods=['POST'])
     def register():
         data = request.get_json()
@@ -76,7 +78,8 @@ def create_app(test_config=None):
         user.set_password(data['password'])
         db.session.add(user)
         db.session.commit()
-        return jsonify({'message': 'User registered'}), 201
+        response = jsonify({'message': 'User registered'})
+        return response, 201
 
     @app.route('/api/login', methods=['POST'])
     def login():
