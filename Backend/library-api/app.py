@@ -1,11 +1,16 @@
 import os
 import io
-from flask import Flask, jsonify, request, send_file
+from flask import Flask, jsonify, request, send_file, session
 from flask_sqlalchemy import SQLAlchemy
 from flask_mail import Mail, Message
 from datetime import date
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_cors import CORS
+from flask_jwt_extended import JWTManager, create_access_token, jwt_required, get_jwt_identity, get_jwt
+from dotenv import load_dotenv
+import errno
+
+
 print(generate_password_hash("testpass"))
 
 # Database config %------------------------------------------------------------------------------------------------------------------------------
@@ -21,12 +26,25 @@ def create_app(test_config=None):
         'DATABASE_URL',
         'postgresql://postgres:UETuCwPapitksT9qmu3Y@localhost:5432/biblioteka'
     )
+
+    if os.path.exists(".env"):
+        load_dotenv()
+    else:
+        raise FileNotFoundError(
+        errno.ENOENT, os.strerror(errno.ENOENT), ".env")
+
+    SECRET_KEY = os.getenv("SECRET_KEY")
+
     app.config['COMMIT_ON_TEARDOWN'] = True
     app.config['MAIL_SERVER'] = 'smtp.example.com'
     app.config['MAIL_PORT'] = 587
     app.config['MAIL_USERNAME'] = 'your@email.com'
     app.config['MAIL_PASSWORD'] = 'yourpassword'
     app.config['MAIL_USE_TLS'] = True
+    app.config["JWT_SECRET_KEY"] = SECRET_KEY
+    app.config['JWT_TOKEN_LOCATION'] = ['headers']
+    jwt = JWTManager(app)
+
     if test_config:
         app.config.update(test_config)
     db.init_app(app)
@@ -100,9 +118,18 @@ def create_app(test_config=None):
         data = request.get_json()
         user = User.query.filter_by(username=data['username']).first()
         if user and user.check_password(data['password']):
-            # Tu możesz zwrócić token lub info o sukcesie
-            return jsonify({'message': 'Login successful'})
+            additional_claims = {"username": user.username}
+            access_token = create_access_token(identity=user.id, additional_claims=additional_claims)
+            response = jsonify(access_token=access_token)
+            return response, 200
         return jsonify({'message': 'Invalid credentials'}), 401
+        
+    
+    @app.route("/api/auth/check")
+    def auth_check():
+        if "username" in session:
+            return jsonify({'authenticated': True, 'username': session['username']})
+        return jsonify({'authenticated': False}), 401
 
     @app.route('/api/loans', methods=['POST'])
     def borrow_book():
