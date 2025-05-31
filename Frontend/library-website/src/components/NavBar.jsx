@@ -25,8 +25,11 @@ function NavBar(props) {
             label="Search"
           />
         </div>
-        <button onClick={() => navigate("/login")}>Log in</button>
-        <button onClick={() => navigate("/register")}>Sign in</button>
+        {localStorage.getItem("access_token") ?
+        <button onClick={() => {localStorage.clear(); window.location.reload()}}>Log out</button> :
+        <> <button onClick={() => navigate("/login")}>Log in</button>
+        <button onClick={() => navigate("/register")}>Sign in</button> </>
+        }
       </div>
     </div>
   );

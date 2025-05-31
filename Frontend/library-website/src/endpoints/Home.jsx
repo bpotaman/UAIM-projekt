@@ -12,14 +12,13 @@ export default function Home() {
       fetch('http://127.0.0.1:5000/api/books')
          .then((res) => res.json())
          .then((data) => {
-            console.log(data);
             setBooks(data);
          })
          .catch((err) => {
             console.log(err.message);
          });
    }, []);
-   console.log(books)
+   
 
     return (
         <>
