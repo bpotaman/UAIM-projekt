@@ -1,5 +1,6 @@
 import os
-from flask import Flask, jsonify, request
+import io
+from flask import Flask, jsonify, request, send_file
 from flask_sqlalchemy import SQLAlchemy
 from flask_mail import Mail, Message
 from datetime import date
@@ -67,8 +68,21 @@ def create_app(test_config=None):
         return jsonify([{'id': book.id,
                         'title': book.title,
                         'author': book.author,
-                        'release_year': book.release_year
+                        'release_year': book.release_year,
+                        'image': book.image
                         } for book in books])
+    
+    @app.route('/api/books/<int:book_id>/cover')
+    def get_book_cover(book_id):
+        book = Book.query.get_or_404(book_id)
+        if book.cover_blob:
+            return send_file(
+                io.BytesIO(book.cover_blob),
+                mimetype='image/jpeg',  # lub image/png, jeśli taki format trzymasz
+                as_attachment=False,
+                download_name=f"cover_{book_id}.jpg"
+            )
+        return jsonify({'error': 'No cover'}), 404
 
 
     @app.route('/api/register', methods=['POST'])
@@ -166,6 +180,8 @@ class Book(db.Model):
     title = db.Column(db.String(120), nullable=False) # Tytuł książki
     author = db.Column(db.String(80), nullable=False) # Autor książki
     release_year = db.Column(db.Integer, nullable=False) # Rok wydania
+    image = db.Column(db.String(255), nullable=True)
+    cover_blob = db.Column(db.LargeBinary, nullable=True)
     # TODO: dodaj pole do przechowywania okładki książki, np. URL do okładki
 
     loans = db.relationship('Loan', back_populates='book')
@@ -210,11 +226,35 @@ def populate_db():
     db.session.add_all([user1, user2])
 
     # Dodaj przykładowe książki
-    book1 = Book(title="Wiedźmin", author="Andrzej Sapkowski", release_year=1993)
-    book2 = Book(title="Lalka", author="Bolesław Prus", release_year=1890)
-    book3 = Book(title="Pan Tadeusz", author="Adam Mickiewicz", release_year=1834)
-    db.session.add_all([book1, book2, book3])
+    with open("static/covers/cover_wiedzmin.jpg", "rb") as f:
+        cover_wiedzmin = f.read()
+    with open("static/covers/cover_lalka.jpg", "rb") as f:
+        cover_lalka = f.read()
+    with open("static/covers/cover_pan_tadeusz.jpg", "rb") as f:
+        cover_pan_tadeusz = f.read()
 
+    book1 = Book(
+        title="Wiedźmin",
+        author="Andrzej Sapkowski",
+        release_year=1993,
+        image="http://localhost:5000/static/covers/cover_wiedzmin.jpg",
+        cover_blob=cover_wiedzmin
+    )
+    book2 = Book(
+        title="Lalka",
+        author="Bolesław Prus",
+        release_year=1890,
+        image="http://localhost:5000/static/covers/cover_lalka.jpg",
+        cover_blob=cover_lalka
+    )
+    book3 = Book(
+        title="Pan Tadeusz",
+        author="Adam Mickiewicz",
+        release_year=1834,
+        image="http://localhost:5000/static/covers/cover_pan_tadeusz.jpg",
+        cover_blob=cover_pan_tadeusz
+    )
+    db.session.add_all([book1, book2, book3])
     db.session.commit()
 
 # Mail Functions %-----------------------------------------------------------------------------------------------------------------------------------

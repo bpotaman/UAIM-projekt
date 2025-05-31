@@ -1,10 +1,10 @@
 import "../css/Book.css";
 
-const Book = ({ title, image }) => {
+const Book = ({ img_path, book_title }) => {
   return (
     <div className="book-card">
-      <img src={image} alt={title} />
-      <h3>{title}</h3>
+      <img src={img_path} alt={book_title} />
+      <h3>{book_title}</h3>
       <button>Borrow</button>
     </div>
   );

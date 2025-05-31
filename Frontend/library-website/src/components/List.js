@@ -10,7 +10,7 @@ function List(props) {
 
     return (
         <div className="searched-books">
-            {filteredBooks.map(book => <Book img_path={book.image} book_title={book.title} key={book.id}/>)}
+            {filteredBooks.map(book => <Book img_path={`http://localhost:5000/api/books/${book.id}/cover`} book_title={book.title} key={book.id}/>)}
         </div>
     )
 }
