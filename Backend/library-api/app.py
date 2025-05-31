@@ -6,6 +6,9 @@ from datetime import date
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_cors import CORS
 from flask_jwt_extended import JWTManager, create_access_token, jwt_required, get_jwt_identity, get_jwt
+from dotenv import load_dotenv
+import errno
+
 
 print(generate_password_hash("testpass"))
 
@@ -13,8 +16,6 @@ print(generate_password_hash("testpass"))
 
 db = SQLAlchemy()
 mail = Mail()
-SECRET_KEY = "secret"
-
 
 def create_app(test_config=None):
     app = Flask(__name__)
@@ -25,13 +26,21 @@ def create_app(test_config=None):
         'postgresql://postgres:UETuCwPapitksT9qmu3Y@localhost:5432/biblioteka'
     )
 
+    if os.path.exists(".env"):
+        load_dotenv()
+    else:
+        raise FileNotFoundError(
+        errno.ENOENT, os.strerror(errno.ENOENT), ".env")
+
+    SECRET_KEY = os.getenv("SECRET_KEY")
+
     app.config['COMMIT_ON_TEARDOWN'] = True
     app.config['MAIL_SERVER'] = 'smtp.example.com'
     app.config['MAIL_PORT'] = 587
     app.config['MAIL_USERNAME'] = 'your@email.com'
     app.config['MAIL_PASSWORD'] = 'yourpassword'
     app.config['MAIL_USE_TLS'] = True
-    app.config["JWT_SECRET_KEY"] = 'your_jwt_secret_key'
+    app.config["JWT_SECRET_KEY"] = SECRET_KEY
     app.config['JWT_TOKEN_LOCATION'] = ['headers']
     jwt = JWTManager(app)
 
