@@ -1,0 +1,8 @@
+<resources>
+    <string name="app_name">LibraryApp</string>
+    <string name="error_fetch_list">Błąd pobierania listy</string>
+    <string name="error_fetch_detail">Błąd pobierania danych</string>
+    <string name="label_author">Autor:</string>
+    <string name="label_publisher">Wydawnictwo:</string>
+    <string name="label_year">Rok:</string>
+</resources>
