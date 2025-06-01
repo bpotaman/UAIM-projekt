@@ -32,6 +32,7 @@ const BookDetails = () => {
           <h2>{book.title}</h2>
           <p><strong>Author:</strong> {book.author}</p>
           <p><strong>Release Year:</strong> {book.release_year}</p>
+          <p><strong>Description:</strong> {book.description}</p>
         </div>
       </div>
     </div>
