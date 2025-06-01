@@ -30,5 +30,28 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="4dp"
             android:textSize="16sp"/>
+
+        <ImageView
+            android:id="@+id/ivImageDetail"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:adjustViewBounds="true"
+            android:scaleType="fitCenter"
+            android:contentDescription="Okładka książki"/>
+
+        <Button
+            android:id="@+id/btnBorrow"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:text="Wypożycz książkę" />
+
+        <Button
+            android:id="@+id/btnReturn"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:text="Zwróć książkę" />
+
     </LinearLayout>
 </ScrollView>
