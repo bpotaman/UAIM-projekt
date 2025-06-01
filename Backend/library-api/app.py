@@ -323,7 +323,7 @@ def populate_db():
 
     book3 = Book(
         title="Pan Tadeusz",
-        genere="Epic poem",
+        genre="Epic poem",
         description="Adam Mickiewicz’s national epic, depicting the lives and customs of Polish nobility in Lithuania, filled with nostalgia, humor, and the hope for national freedom.",
         author="Adam Mickiewicz",
         release_year=1834,
@@ -336,7 +336,7 @@ def populate_db():
 
     book4 = Book(
         title="Le Petit Prince",
-        genere="Science fantasy",
+        genre="Science fantasy",
         description="A poetic tale by Antoine de Saint-Exupéry about a young prince who travels from planet to planet, discovering the wonders and absurdities of the adult world.",
         author="Antoine de Saint-Exupéry",
         release_year=1943,
@@ -349,7 +349,7 @@ def populate_db():
 
     book5 = Book(
         title="1984",
-        genere="Dystopian",
+        genre="Dystopian",
         description="George Orwell’s dystopian masterpiece about a totalitarian regime that uses surveillance, censorship, and propaganda to control every aspect of life.",
         author="George Orwell",
         release_year=1949,
@@ -362,7 +362,7 @@ def populate_db():
 
     book6 = Book(
         title="Disgrace",
-        genere="Novel",
+        genre="Novel",
         description="J.M. Coetzee’s novel about a disgraced professor in post-apartheid South Africa, exploring themes of power, redemption, and societal change.",
         author="John Maxwell Coetzee",
         release_year=1999,
@@ -375,7 +375,7 @@ def populate_db():
 
     book7 = Book(
         title="The Remains of the Day",
-        genere="Historical novel",
+        genre="Historical novel",
         description="Kazuo Ishiguro’s moving story of an English butler reflecting on his life, loyalty, and missed opportunities in the years before and after World War II.",
         author="Kazuo Ishiguro",
         release_year=1989,
@@ -388,7 +388,7 @@ def populate_db():
 
     book8 = Book(
         title="The fellowship of the ring",
-        genere="Fantasy",
+        genre="Fantasy",
         description="The first part of J.R.R. Tolkien’s epic trilogy, where Frodo Baggins and his companions set out on a perilous quest to destroy the One Ring.",
         author="John Ronald Reuel Tolkien",
         release_year=1954,
@@ -401,7 +401,7 @@ def populate_db():
 
     book9 = Book(
         title="The Two Towers",
-        genere="Fantasy",
+        genre="Fantasy",
         description="The second volume of Tolkien’s The Lord of the Rings, following the divided fellowship as they face new dangers and the growing power of Sauron.",
         author="John Ronald Reuel Tolkien",
         release_year=1954,
@@ -414,7 +414,7 @@ def populate_db():
 
     book10 = Book(
         title="The Return of the King",
-        genere="Fantasy",
+        genre="Fantasy",
         description="The final part of The Lord of the Rings trilogy, where the forces of good make their last stand against evil and the fate of Middle-earth is decided.",
         author="John Ronald Reuel Tolkien",
         release_year=1955,
@@ -427,7 +427,7 @@ def populate_db():
 
     book11 = Book(
         title="The Hobbit",
-        genere="Fantasy",
+        genre="Fantasy",
         description="The enchanting prelude to The Lord of the Rings, telling the adventure of Bilbo Baggins as he joins a group of dwarves on a quest to reclaim their homeland from a dragon.",
         author="John Ronald Reuel Tolkien",
         release_year=1937,
