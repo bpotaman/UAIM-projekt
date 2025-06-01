@@ -2,6 +2,7 @@ package com.example.libraryapp;
 
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -62,9 +63,10 @@ public class DetailActivity extends AppCompatActivity {
 
             if (imageUrl != null && !imageUrl.isEmpty()) {
                 // backend zwraca "http://localhost:5000...", więc na emulatorze zamieniamy na 10.0.2.2
-                String fixedUrl = imageUrl.replace("http://localhost:5000", "http://10.0.2.2:5000");
+//                String fixedUrl = imageUrl.replace("http://localhost:5000", "http://10.0.2.2:5000");
+                String coverUrl = "http://10.0.2.2:5000/api/books/" + bookId + "/cover";
                 Picasso.get()
-                        .load(fixedUrl)
+                        .load(coverUrl)
                         .into(ivImageDetail);
             }
         }
@@ -79,7 +81,21 @@ public class DetailActivity extends AppCompatActivity {
             btnBorrow.setEnabled(false);
             String dateStr = formatDate(borrowedUntil);
             btnBorrow.setText("Wypożyczono do " + dateStr);
+
+            // Aktywacja przycisku do zwrotu książki
+            btnReturn.setVisibility(View.VISIBLE);
+            btnReturn.setEnabled(true);
+            btnReturn.setText("Zwróć książkę");
+
         } else {
+            btnBorrow.setEnabled(true);
+            btnBorrow.setText("Wypożycz książkę");
+
+            btnReturn.setVisibility(View.GONE);
+        }
+//        if () {
+//
+//        }
             // Książka nie jest wypożyczona – ustawiamy listener
             btnBorrow.setOnClickListener(v -> {
                 // Obliczamy "teraz + 2 miesiące"
@@ -104,7 +120,28 @@ public class DetailActivity extends AppCompatActivity {
                         Toast.LENGTH_LONG
                 ).show();
             });
-        }
+
+        btnReturn.setOnClickListener(v -> {
+            // 6a) Usuwamy wpis z SharedPreferences
+            prefs.edit()
+                    .remove(KEY_PREFIX + bookId)
+                    .apply();
+
+            // 6b) Przywracamy stan „nie wypożyczona”
+            btnBorrow.setEnabled(true);
+            btnBorrow.setText("Wypożycz książkę");
+
+            // 6c) Ukrywamy przycisk Zwróć
+            btnReturn.setVisibility(View.GONE);
+
+            // 6d) Potwierdzenie zwrotu
+            Toast.makeText(
+                    DetailActivity.this,
+                    "Zwrócono książkę",
+                    Toast.LENGTH_SHORT
+            ).show();
+        });
+
     }
 
     private String formatDate(long millis) {
