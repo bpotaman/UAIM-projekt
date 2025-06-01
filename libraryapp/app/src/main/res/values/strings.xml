@@ -5,4 +5,5 @@
     <string name="label_author">Autor:</string>
     <string name="label_publisher">Wydawnictwo:</string>
     <string name="label_year">Rok:</string>
+    <string name="library_menu">Library Menu</string>
 </resources>

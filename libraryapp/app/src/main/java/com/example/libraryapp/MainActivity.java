@@ -8,6 +8,10 @@ import android.widget.ListView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.view.GravityCompat;
+import androidx.drawerlayout.widget.DrawerLayout;
+
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -43,6 +47,11 @@ public class MainActivity extends AppCompatActivity {
             intent.putExtra("IMAGE_URL", book.getImageUrl());
             startActivity(intent);
         });
+
+        DrawerLayout drawerLayout = findViewById(R.id.drawer_layout);
+        FloatingActionButton fab = findViewById(R.id.fabMenu);
+
+        fab.setOnClickListener(v -> drawerLayout.openDrawer(GravityCompat.END));
 
         // Pobranie listy książek z API
         fetchBooks();
