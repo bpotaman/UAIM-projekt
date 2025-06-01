@@ -1,3 +1,4 @@
+// src/pages/MyBooks.jsx
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import "../css/MyBooks.css";
@@ -42,14 +43,16 @@ const MyBooks = () => {
 
   return (
   <div className="my-books-container">
-    <button className="back-button" onClick={() => navigate("/")}>← Back to Home</button>
-    <h2>My Current Loans</h2>
+    <button className="back-button" onClick={() => navigate("/")}>
+      ⬅ Return to homepage
+    </button>
+    <h2 className="animated-title">My Borrowed Books</h2>
     {loans.length === 0 ? (
-      <p>You have no unreturned books.</p>
+      <p className="fade-in">You have no unreturned books.</p>
     ) : (
       <div className="loan-list">
-        {loans.map((loan) => (
-          <div className="loan-card" key={loan.id}>
+        {loans.map((loan, index) => (
+          <div className="loan-card fade-in" key={loan.id} style={{ animationDelay: `${index * 100}ms` }}>
             <img
               src={`http://localhost:5000/api/books/${loan.book.id}/cover`}
               alt={loan.book.title}
