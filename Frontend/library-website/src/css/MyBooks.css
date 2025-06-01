@@ -3,11 +3,14 @@
   max-width: 900px;
   margin: 4rem auto;
   padding: 2rem;
-  background-color: #f4f1ea;
+  background: rgba(255, 255, 255, 0.5);
+  backdrop-filter: blur(8px);
   border-radius: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
+
 
 .my-books-container h2 {
   color: #4b3f72;
@@ -60,4 +63,19 @@
 
 .loan-details button:hover {
   background-color: #362b52;
+}
+
+@keyframes fadeInSlideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.loan-card {
+  animation: fadeInSlideUp 0.5s ease forwards;
 }

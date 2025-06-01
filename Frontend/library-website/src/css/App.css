@@ -13,6 +13,13 @@ h1 {
     color: rgb(1, 1, 59);
 }
 
+h1, h2 {
+  font-family: 'Playfair Display', serif;
+  color: #4b3f72;
+  letter-spacing: 1px;
+}
+
+
 .search {
     width: 30%;
 }

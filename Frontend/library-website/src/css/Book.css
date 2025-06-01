@@ -12,8 +12,10 @@
   transition: transform 0.2s ease;
 }
 
+
 .book-card:hover {
-  transform: translateY(-5px);
+  transform: translateY(-5px) scale(1.03);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
 }
 
 .book-card img {
