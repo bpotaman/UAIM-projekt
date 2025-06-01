@@ -58,8 +58,8 @@ def create_app(test_config=None):
     @app.route('/')
     def index():
         return jsonify({'message': 'Welcome to the BookNest public library API!'})
-    
-    
+
+
 
     # App context %----------------------------------------------------------------------------------------------------------------------------------
 
@@ -91,6 +91,8 @@ def create_app(test_config=None):
         books = Book.query.all()
         return jsonify([{'id': book.id,
                         'title': book.title,
+                        'genre': book.genre,
+                        'description': book.description,
                         'author': book.author,
                         'release_year': book.release_year,
                         'image': book.image
@@ -102,7 +104,7 @@ def create_app(test_config=None):
         if book.cover_blob:
             return send_file(
                 io.BytesIO(book.cover_blob),
-                mimetype='image/jpeg',  # lub image/png, jeśli taki format trzymasz
+                mimetype='image/jpeg',
                 as_attachment=False,
                 download_name=f"cover_{book_id}.jpg"
             )
@@ -170,7 +172,7 @@ def create_app(test_config=None):
             return jsonify({'loans': [loan.to_dict() for loan in user.loans]})
         else:
             return jsonify({'error': 'User not found'}), 404
-    
+
     @app.route('/api/loans/<int:loan_id>/return', methods=['PUT'])
     def return_book(loan_id):
         loan = Loan.query.get(loan_id)
@@ -190,7 +192,7 @@ def create_app(test_config=None):
     
     return app
 
-    
+
 
 # Models %-------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -219,11 +221,15 @@ class User(db.Model):
         return f'<User {self.username}>'
 
 class Book(db.Model):
-
+    """
+    Model książki w bibliotece.
+    Przechowuje podstawowe informacje o książce.
+    """
     __tablename__ = 'books'
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(120), nullable=False) # Tytuł książki
     genre = db.Column(db.String(120), nullable=False)
+    description = db.Column(db.String(200)) # Opis książki
     author = db.Column(db.String(80), nullable=False) # Autor książki
     release_year = db.Column(db.Integer, nullable=False) # Rok wydania
     image = db.Column(db.String(255), nullable=True)
@@ -289,33 +295,147 @@ def populate_db():
     # Dodaj przykładowe książki
     with open("static/covers/cover_wiedzmin.jpg", "rb") as f:
         cover_wiedzmin = f.read()
-    with open("static/covers/cover_lalka.jpg", "rb") as f:
-        cover_lalka = f.read()
-    with open("static/covers/cover_pan_tadeusz.jpg", "rb") as f:
-        cover_pan_tadeusz = f.read()
 
     book1 = Book(
         title="Wiedźmin",
+        genre="Fantasy",
+        description="The story of Geralt of Rivia, a legendary monster hunter, who travels a magical world full of intrigue, danger, and moral ambiguity.",
         author="Andrzej Sapkowski",
         release_year=1993,
         image="http://localhost:5000/static/covers/cover_wiedzmin.jpg",
         cover_blob=cover_wiedzmin
     )
+
+    with open("static/covers/cover_lalka.jpg", "rb") as f:
+        cover_lalka = f.read()
+
     book2 = Book(
         title="Lalka",
+        genre="Novel",
+        description="A classic Polish novel by Bolesław Prus, following the tragic love of merchant Stanisław Wokulski for the aristocratic Izabela Łęcka, set against the backdrop of 19th-century Warsaw.",
         author="Bolesław Prus",
         release_year=1890,
         image="http://localhost:5000/static/covers/cover_lalka.jpg",
         cover_blob=cover_lalka
     )
+    with open("static/covers/cover_pan_tadeusz.jpg", "rb") as f:
+        cover_pan_tadeusz = f.read()
+
     book3 = Book(
         title="Pan Tadeusz",
+        genere="Epic poem",
+        description="Adam Mickiewicz’s national epic, depicting the lives and customs of Polish nobility in Lithuania, filled with nostalgia, humor, and the hope for national freedom.",
         author="Adam Mickiewicz",
         release_year=1834,
         image="http://localhost:5000/static/covers/cover_pan_tadeusz.jpg",
         cover_blob=cover_pan_tadeusz
     )
-    db.session.add_all([book1, book2, book3])
+
+    with open("static/covers/cover_maly_ksiaze.jpg", "rb") as f:
+        cover_maly_ksiaze = f.read()
+
+    book4 = Book(
+        title="Le Petit Prince",
+        genere="Science fantasy",
+        description="A poetic tale by Antoine de Saint-Exupéry about a young prince who travels from planet to planet, discovering the wonders and absurdities of the adult world.",
+        author="Antoine de Saint-Exupéry",
+        release_year=1943,
+        image="http://localhost:5000/static/covers/cover_maly_ksiaze",
+        cover_blob=cover_maly_ksiaze
+    )
+
+    with open("static/covers/cover_1984.jpg", "rb") as f:
+        cover_1984 = f.read()
+
+    book5 = Book(
+        title="1984",
+        genere="Dystopian",
+        description="George Orwell’s dystopian masterpiece about a totalitarian regime that uses surveillance, censorship, and propaganda to control every aspect of life.",
+        author="George Orwell",
+        release_year=1949,
+        image="http://localhost:5000/static/covers/cover_1984",
+        cover_blob=cover_1984
+    )
+
+    with open("static/covers/cover_hanba.jpg", "rb") as f:
+        cover_hanba = f.read()
+
+    book6 = Book(
+        title="Disgrace",
+        genere="Novel",
+        description="J.M. Coetzee’s novel about a disgraced professor in post-apartheid South Africa, exploring themes of power, redemption, and societal change.",
+        author="John Maxwell Coetzee",
+        release_year=1999,
+        image="http://localhost:5000/static/covers/cover_hanba",
+        cover_blob=cover_hanba
+    )
+
+    with open("static/covers/cover_okruchy_dnia.jpg", "rb") as f:
+        cover_okruchy_dnia = f.read()
+
+    book7 = Book(
+        title="The Remains of the Day",
+        genere="Historical novel",
+        description="Kazuo Ishiguro’s moving story of an English butler reflecting on his life, loyalty, and missed opportunities in the years before and after World War II.",
+        author="Kazuo Ishiguro",
+        release_year=1989,
+        image="http://localhost:5000/static/covers/cover_okruchy_dnia",
+        cover_blob=cover_okruchy_dnia
+    )
+
+    with open("static/covers/cover_druzyna_pierscienia.jpg", "rb") as f:
+        cover_druzyna_pierscienia = f.read()
+
+    book8 = Book(
+        title="The fellowship of the ring",
+        genere="Fantasy",
+        description="The first part of J.R.R. Tolkien’s epic trilogy, where Frodo Baggins and his companions set out on a perilous quest to destroy the One Ring.",
+        author="John Ronald Reuel Tolkien",
+        release_year=1954,
+        image="http://localhost:5000/static/covers/covercover_druzyna_pierscienia_",
+        cover_blob=cover_druzyna_pierscienia
+    )
+
+    with open("static/covers/cover_dwie_wieze.jpg", "rb") as f:
+        cover_dwie_wieze = f.read()
+
+    book9 = Book(
+        title="The Two Towers",
+        genere="Fantasy",
+        description="The second volume of Tolkien’s The Lord of the Rings, following the divided fellowship as they face new dangers and the growing power of Sauron.",
+        author="John Ronald Reuel Tolkien",
+        release_year=1954,
+        image="http://localhost:5000/static/covers/cover_dwie_wieze",
+        cover_blob=cover_dwie_wieze
+    )
+
+    with open("static/covers/cover_powrot_krola.jpg", "rb") as f:
+        cover_powrot_krola = f.read()
+
+    book10 = Book(
+        title="The Return of the King",
+        genere="Fantasy",
+        description="The final part of The Lord of the Rings trilogy, where the forces of good make their last stand against evil and the fate of Middle-earth is decided.",
+        author="John Ronald Reuel Tolkien",
+        release_year=1955,
+        image="http://localhost:5000/static/covers/cover_powrot_krola",
+        cover_blob=cover_powrot_krola
+    )
+
+    with open("static/covers/cover_hobbit.jpg", "rb") as f:
+        cover_hobbit = f.read()
+
+    book11 = Book(
+        title="The Hobbit",
+        genere="Fantasy",
+        description="The enchanting prelude to The Lord of the Rings, telling the adventure of Bilbo Baggins as he joins a group of dwarves on a quest to reclaim their homeland from a dragon.",
+        author="John Ronald Reuel Tolkien",
+        release_year=1937,
+        image="http://localhost:5000/static/covers/cover_hobbit",
+        cover_blob=cover_hobbit
+    )
+
+    db.session.add_all([book1, book2, book3, book4, book5, book6, book7, book8, book9, book10, book11])
     db.session.commit()
 
 # Mail Functions %-----------------------------------------------------------------------------------------------------------------------------------
