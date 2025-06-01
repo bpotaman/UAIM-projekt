@@ -9,6 +9,7 @@ from flask_cors import CORS
 from flask_jwt_extended import JWTManager, create_access_token, jwt_required, get_jwt_identity, get_jwt
 from dotenv import load_dotenv
 import errno
+from apscheduler.schedulers.background import BackgroundScheduler
 
 
 print(generate_password_hash("testpass"))
@@ -17,6 +18,23 @@ print(generate_password_hash("testpass"))
 
 db = SQLAlchemy()
 mail = Mail()
+
+def send_due_today_reminders():
+    today = date.today()
+    due_today_loans = Loan.query.filter(
+        Loan.due_date == today,
+        Loan.return_date == None
+    ).all()
+
+    for loan in due_today_loans:
+        user = User.query.get(loan.user_id)
+        book = Book.query.get(loan.book_id)
+        if user and book:
+            send_confirmation_email(
+                user.email,
+                "Dziś mija termin zwrotu książki",
+                f"To przypomnienie, że dziś upływa termin zwrotu książki '{book.title}'. Prosimy o jej zwrot w terminie."
+                )
 
 def create_app(test_config=None):
     app = Flask(__name__)
@@ -189,6 +207,11 @@ def create_app(test_config=None):
                 )
             return jsonify({'message': 'Book returned'})
         return jsonify({'message': 'Loan not found'}), 404
+    
+    
+    scheduler = BackgroundScheduler()
+    scheduler.add_job(func=send_due_today_reminders, trigger="cron", hour=8)  # Codziennie o 8:00
+    scheduler.start()
     
     return app
 
@@ -444,21 +467,7 @@ def send_confirmation_email(user_email, subject, body):
     msg = Message(subject, sender=os.getenv("SENDER"),recipients=[user_email], body=body)
     mail.send(msg)
 
-def send_due_reminders():
-    today = date.today()
-    overdue_loans = Loan.query.filter(
-        Loan.due_date < today,
-        Loan.return_date == None
-    ).all()
-    for loan in overdue_loans:
-        user = User.query.get(loan.user_id)
-        book = Book.query.get(loan.book_id)
-        if user and book:
-            send_confirmation_email(
-                user.email,
-                "Przypomnienie o terminie zwrotu książki",
-                f"Przekroczyłeś termin zwrotu książki '{book.title}'. Prosimy o jej zwrot!"
-            )
+
 
 
 # TODO: dorób wysyłanie przypomnień o terminie zwrotu książki

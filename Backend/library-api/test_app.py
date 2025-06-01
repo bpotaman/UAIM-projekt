@@ -25,16 +25,16 @@ def test_register(client):
     assert b'User registered' in response.data
 
 def test_login(client):
-    # Najpierw zarejestruj użytkownika
     client.post('/api/register', json={
         'username': 'testuser2',
         'email': 'test2@example.com',
         'password': 'testpass'
     })
-    # Teraz zaloguj
     response = client.post('/api/login', json={
         'username': 'testuser2',
         'password': 'testpass'
     })
+
     assert response.status_code == 200
-    assert b'Login successful' in response.data
+    data = response.get_json()
+    assert 'access_token' in data
