@@ -60,3 +60,40 @@ button:hover {
     width: 100%;
   }
 }
+
+.filter-modal {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 400px;
+  background: white;
+  border-radius: 12px;
+  padding: 24px;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.2);
+}
+
+.filter-buttons {
+  display: flex;
+  justify-content: flex-end;
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+
+.search-filter-group {
+  display: flex;
+  align-items: center;
+  gap: 0;
+}
+
+.search-filter-group .search {
+  border-top-right-radius: 0;
+  border-bottom-right-radius: 0;
+}
+
+.search-filter-group .filter-button {
+  border-top-left-radius: 0;
+  border-bottom-left-radius: 0;
+  height: 40px;
+}

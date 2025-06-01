@@ -4,13 +4,13 @@ import BorrowBook from "./BorrowBook";
 import "../css/Book.css";
 import axios from "axios";
 
-function List(props) {
+function List({ books, input, filters }) {
   const [selectedBookId, setSelectedBookId] = useState(null);
   const [showCalendar, setShowCalendar] = useState(false);
 
-  // Pobranie user_id z tokenu
+  // Pobieranie user_id z JWT
   let user_id = null;
-  if (localStorage.getItem("access_token") !== null) {
+  if (localStorage.getItem("access_token")) {
     try {
       const arrayToken = localStorage.getItem("access_token").split(".");
       const tokenPayload = JSON.parse(atob(arrayToken[1]));
@@ -20,29 +20,45 @@ function List(props) {
     }
   }
 
-  // Filtrowanie książek
-  const title_match = (book) => book.title.toLowerCase().includes(props.input);
-  const filteredBooks = props.books.filter(title_match);
+  // Filtrowanie książek: tytuł + dodatkowe filtry
+  const filteredBooks = books.filter((book) => {
+    const titleMatch = book.title.toLowerCase().includes(input.toLowerCase());
 
-  // Kliknięcie przycisku "Borrow"
+    const authorMatch = !filters.author ||
+      book.author.toLowerCase().includes(filters.author.toLowerCase());
+
+    const genreMatch = !filters.genre ||
+      book.genre.toLowerCase().includes(filters.genre.toLowerCase());
+
+    const yearMatch = !filters.release_year ||
+      book.release_year.toString().includes(filters.release_year);
+
+    return titleMatch && authorMatch && genreMatch && yearMatch;
+  });
+
+  // Obsługa kliknięcia "Borrow"
   const handleBorrowClick = (bookId) => {
     setSelectedBookId(bookId);
     setShowCalendar(true);
   };
 
-  // Po wybraniu daty z kalendarza
+  // Po wybraniu daty
   const handleDateChosen = async (bookId, userId, due_date) => {
     try {
       const response = await axios.post(
         "http://localhost:5000/api/loans",
         JSON.stringify({ book_id: bookId, user_id: userId, due_date }),
-        { headers: { "Content-Type": "application/json" } }
+        {
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
       );
       console.log("Loan response:", response);
     } catch (err) {
       console.error("Loan error:", err);
     } finally {
-      setShowCalendar(false); // Zamknij kalendarz po złożeniu żądania
+      setShowCalendar(false);
     }
   };
 
@@ -58,7 +74,6 @@ function List(props) {
         />
       ))}
 
-      {/* Modal z kalendarzem */}
       {showCalendar && selectedBookId && user_id && (
         <BorrowBook
           bookId={selectedBookId}
