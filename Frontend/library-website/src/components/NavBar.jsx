@@ -8,14 +8,26 @@ function NavBar(props) {
     props.setInputText(lowerCase);
   }
 
+  let user_id = null
+  
+  if (localStorage.getItem("access_token") === null) {
+    user_id = false
+  }
+  else {
+    const arrayToken = localStorage.getItem("access_token").split('.')
+    const tokenPayload = JSON.parse(atob(arrayToken[1]))
+    user_id = tokenPayload.sub
+  }
+
   let navigate = useNavigate();
+  
   
 
   return (
     <div className="main">
       <h1>BookNest</h1>
       <div className="nav-controls">
-        <button>My books</button>
+        <button onClick={() => props.myBooks(user_id)}>My books</button>
         <div className="search">
           <TextField
             id="outlined-basic"

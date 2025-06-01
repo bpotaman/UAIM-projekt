@@ -1,6 +1,6 @@
 import { useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import axios from "axios"; // ✅ Corrected import
+import axios from "axios";
 import "../css/Auth.css";
 
 const LoginPage = () => {
@@ -26,7 +26,7 @@ const LoginPage = () => {
 
       setUsername("");
       setPassword("");
-      navigate("/"); 
+      navigate("/");
     } catch (err) {
       if (!err?.response) {
         setErrMsg("No Server Response");

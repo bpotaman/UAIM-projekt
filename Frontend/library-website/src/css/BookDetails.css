@@ -1,0 +1,49 @@
+.book-details-container {
+  max-width: 800px;
+  margin: 3rem auto;
+  background-color: #f4f1ea;
+  padding: 2rem;
+  border-radius: 16px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.book-info {
+  display: flex;
+  gap: 2rem;
+  align-items: center;
+}
+
+.book-info img {
+  width: 200px;
+  height: auto;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+}
+
+.info-text h2 {
+  color: #4b3f72;
+  margin-bottom: 0.5rem;
+}
+
+.info-text p {
+  font-size: 1.1rem;
+  margin: 0.2rem 0;
+}
+
+.back-button {
+  margin-bottom: 1rem;
+  background-color: transparent;
+  color: #4b3f72;
+  font-size: 1rem;
+  font-weight: bold;
+  border: none;
+  cursor: pointer;
+  transition: color 0.3s ease;
+}
+
+.back-button:hover {
+  color: #ffffff;
+  text-decoration: underline;
+}
+

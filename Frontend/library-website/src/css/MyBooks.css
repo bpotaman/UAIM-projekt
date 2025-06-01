@@ -1,0 +1,63 @@
+/* src/css/MyBooks.css */
+.my-books-container {
+  max-width: 900px;
+  margin: 4rem auto;
+  padding: 2rem;
+  background-color: #f4f1ea;
+  border-radius: 16px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.my-books-container h2 {
+  color: #4b3f72;
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+.loan-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.loan-card {
+  display: flex;
+  align-items: flex-start;
+  background-color: #fff;
+  padding: 1rem;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.loan-cover {
+  width: 120px;
+  height: auto;
+  margin-right: 1.5rem;
+  border-radius: 8px;
+}
+
+.loan-details h3 {
+  margin: 0 0 0.5rem 0;
+  color: #4b3f72;
+}
+
+.loan-details p {
+  margin: 0.25rem 0;
+}
+
+.loan-details button {
+  margin-top: 1rem;
+  background-color: #4b3f72;
+  color: #fff;
+  border: none;
+  padding: 0.6rem 1rem;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 1rem;
+  cursor: pointer;
+}
+
+.loan-details button:hover {
+  background-color: #362b52;
+}

@@ -20,7 +20,7 @@ mail = Mail()
 
 def create_app(test_config=None):
     app = Flask(__name__)
-    CORS(app, supports_credentials=True, resources={r"/api/*": {"origins": "http://localhost:3000"}})
+    CORS(app, supports_credentials=True, origins="http://localhost:3000")
     app.config['CORS_HEADERS'] = 'Content-Type'
     app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get(
         'DATABASE_URL',
@@ -36,13 +36,15 @@ def create_app(test_config=None):
     SECRET_KEY = os.getenv("SECRET_KEY")
 
     app.config['COMMIT_ON_TEARDOWN'] = True
-    app.config['MAIL_SERVER'] = 'smtp.example.com'
-    app.config['MAIL_PORT'] = 587
-    app.config['MAIL_USERNAME'] = 'your@email.com'
-    app.config['MAIL_PASSWORD'] = 'yourpassword'
-    app.config['MAIL_USE_TLS'] = True
+    app.config['MAIL_SERVER'] = 'smtp.gmail.com'
+    app.config['MAIL_PORT'] = 465
+    app.config['MAIL_USERNAME'] = os.getenv("SENDER")
+    app.config['MAIL_PASSWORD'] = os.getenv("MAIL_PSWD")
+    app.config['MAIL_USE_TLS'] = False
+    app.config['MAIL_USE_SSL'] = True
     app.config["JWT_SECRET_KEY"] = SECRET_KEY
     app.config['JWT_TOKEN_LOCATION'] = ['headers']
+
     jwt = JWTManager(app)
 
     if test_config:
@@ -56,6 +58,8 @@ def create_app(test_config=None):
     @app.route('/')
     def index():
         return jsonify({'message': 'Welcome to the BookNest public library API!'})
+    
+    
 
     # App context %----------------------------------------------------------------------------------------------------------------------------------
 
@@ -66,6 +70,8 @@ def create_app(test_config=None):
     #     return {'db': db, 'User': User, 'Book': Book, 'Loan': Loan}
     
     # API Functions %--------------------------------------------------------------------------------------------------------------------------------
+
+
 
     @app.route('/api/books', methods=['GET'])
     def get_books():
@@ -110,6 +116,11 @@ def create_app(test_config=None):
         user.set_password(data['password'])
         db.session.add(user)
         db.session.commit()
+        send_confirmation_email(
+                    data['email'],
+                    'Registration successful',
+                    f'You have successfuly registered :)'
+                )
         response = jsonify({'message': 'User registered'})
         return response, 201
 
@@ -150,8 +161,16 @@ def create_app(test_config=None):
                 'Book Succesfully Borrowed',
                 f'You have borrowed "{book.title}" by {book.author}. Due date: {loan.due_date}. Do not forget to return it on time!'
             )
-        return jsonify({'message': 'Book borrowed'}), 201
+        return jsonify({'message': f'{book} has been successfuly borrowed'}), 201
 
+    @app.route('/api/loans/<int:user_id>', methods=['GET'])
+    def get_my_books(user_id):
+        user = User.query.filter_by(id=user_id).first()
+        if user:
+            return jsonify({'loans': [loan.to_dict() for loan in user.loans]})
+        else:
+            return jsonify({'error': 'User not found'}), 404
+    
     @app.route('/api/loans/<int:loan_id>/return', methods=['PUT'])
     def return_book(loan_id):
         loan = Loan.query.get(loan_id)
@@ -170,6 +189,8 @@ def create_app(test_config=None):
         return jsonify({'message': 'Loan not found'}), 404
     
     return app
+
+    
 
 # Models %-------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -198,10 +219,7 @@ class User(db.Model):
         return f'<User {self.username}>'
 
 class Book(db.Model):
-    """
-    Model książki w bibliotece.
-    Przechowuje podstawowe informacje o książce.
-    """
+
     __tablename__ = 'books'
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(120), nullable=False) # Tytuł książki
@@ -209,7 +227,6 @@ class Book(db.Model):
     release_year = db.Column(db.Integer, nullable=False) # Rok wydania
     image = db.Column(db.String(255), nullable=True)
     cover_blob = db.Column(db.LargeBinary, nullable=True)
-    # TODO: dodaj pole do przechowywania okładki książki, np. URL do okładki
 
     loans = db.relationship('Loan', back_populates='book')
 
@@ -231,6 +248,22 @@ class Loan(db.Model):
 
     user = db.relationship('User', back_populates='loans')
     book = db.relationship('Book', back_populates='loans')
+
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'user_id': self.user_id,
+            'book_id': self.book_id,
+            'loan_date': self.loan_date.isoformat(),
+            'due_date': self.due_date.isoformat(),
+            'return_date': self.return_date.isoformat() if self.return_date else None,
+            'book': {
+                'id': self.book.id,
+                'title': self.book.title,
+                'author': self.book.author,
+            }
+        }
+
 
     def __repr__(self):
         return f'<Loan {self.id}: User {self.user_id} Book {self.book_id}>'
@@ -287,7 +320,7 @@ def populate_db():
 # Mail Functions %-----------------------------------------------------------------------------------------------------------------------------------
 
 def send_confirmation_email(user_email, subject, body):
-    msg = Message(subject, recipients=[user_email], body=body)
+    msg = Message(subject, sender=os.getenv("SENDER"),recipients=[user_email], body=body)
     mail.send(msg)
 
 def send_due_reminders():
@@ -305,6 +338,7 @@ def send_due_reminders():
                 "Przypomnienie o terminie zwrotu książki",
                 f"Przekroczyłeś termin zwrotu książki '{book.title}'. Prosimy o jej zwrot!"
             )
+
 
 # TODO: dorób wysyłanie przypomnień o terminie zwrotu książki
 
