@@ -1,4 +1,3 @@
-// src/components/Calendar.jsx
 import React, { Component } from 'react';
 import CalendarDays from './CalendarDays.jsx';
 import "../css/calendar.css";
