@@ -33,13 +33,27 @@ const MyBooks = () => {
   }, [navigate]);
 
   const handleReturn = async (loanId) => {
-    try {
-      await axios.put(`http://localhost:5000/api/loans/${loanId}/return`);
-      setLoans((prev) => prev.filter((loan) => loan.id !== loanId));
-    } catch (err) {
-      console.error("Failed to return loan:", err);
-    }
-  };
+  const token = localStorage.getItem("access_token");
+  if (!token) {
+    console.error("No access token found");
+    return;
+  }
+
+  try {
+    await axios.put(
+      `http://localhost:5000/api/loans/${loanId}/return`,
+      {}, // puste body, jeśli nie wysyłasz danych w PUT
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+    setLoans((prev) => prev.filter((loan) => loan.id !== loanId));
+  } catch (err) {
+    console.error("Failed to return loan:", err);
+  }
+};
 
   return (
   <div className="my-books-container">

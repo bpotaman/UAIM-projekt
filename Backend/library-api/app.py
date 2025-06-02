@@ -190,7 +190,8 @@ def create_app(test_config=None):
             return jsonify({'loans': [loan.to_dict() for loan in user.loans]})
         else:
             return jsonify({'error': 'User not found'}), 404
-
+        
+    @jwt_required()
     @app.route('/api/loans/<int:loan_id>/return', methods=['PUT'])
     def return_book(loan_id):
         loan = Loan.query.get(loan_id)
