@@ -61,7 +61,7 @@ public class BookAdapter extends ArrayAdapter<Book> {
             if (imageUrl != null && !imageUrl.isEmpty()) {
                 // Jeśli aplikacja działa w emulatorze i backend jest na localhost:5000,
                 // Picasso nie załaduje obrazu z "http://localhost". Używamy 10.0.2.2 zamiast localhost.
-                String coverUrl = "http://192.168.1.3:5000/api/books/" + book.getId() + "/cover";
+                String coverUrl = "http://10.0.2.2:5000/api/books/" + book.getId() + "/cover";
                 Picasso.get()
                         .load(coverUrl)
                         .into(holder.ivThumbnail);

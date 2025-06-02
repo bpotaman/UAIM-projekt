@@ -68,7 +68,7 @@ public class DetailActivity extends AppCompatActivity {
                 //--------------------------------------------------------
                 //DO ZMIANY URL SPOWROTEM NA 10.0.2.2
                 //--------------------------------------------------------
-                String coverUrl = "http://192.168.1.3:5000/api/books/" + bookId + "/cover";
+                String coverUrl = "http://10.0.2.2:5000/api/books/" + bookId + "/cover";
                 Picasso.get()
                         .load(coverUrl)
                         .into(ivImageDetail);

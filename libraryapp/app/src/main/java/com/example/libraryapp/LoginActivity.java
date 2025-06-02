@@ -24,7 +24,7 @@ public class LoginActivity extends AppCompatActivity {
     //DO ZMIANY NA 10.0.2.2
     //--------------------------------------------------------------------
     //--------------------------------------------------------------------
-    private static final String LOGIN_URL = "http://192.168.1.3:5000/api/login";
+    private static final String LOGIN_URL = "http://10.0.2.2:5000/api/login";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {

@@ -32,7 +32,7 @@ public class MainActivity extends AppCompatActivity {
     //SPOWROTEM IP DLA DOCKERÓW
     //-------------------------------------------------------
     //-----------------------------------------------
-    private static final String BOOKS_URL = "http://192.168.1.3:5000/api/books";
+    private static final String BOOKS_URL = "http://10.0.2.2:5000/api/books";
 
     private ListView lvBooks;
     private final List<Book> books = new ArrayList<>();
@@ -60,7 +60,7 @@ public class MainActivity extends AppCompatActivity {
             startActivity(intent);
         });
 
-        DrawerLayout drawerLayout = findViewById(R.id.drawer_layout);
+        drawerLayout = findViewById(R.id.drawer_layout);
         FloatingActionButton fab = findViewById(R.id.fabMenu);
         fab.setOnClickListener(v -> drawerLayout.openDrawer(GravityCompat.END));
 
