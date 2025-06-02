@@ -70,11 +70,11 @@ public class MainActivity extends AppCompatActivity {
 
     private boolean onNavigationItemSelected(@NonNull MenuItem item) {
         int id1 = item.getItemId();
-        Log.d("NAV_DRAWER", "Kliknięto opcję: " + id1);
-
+        if (id1 == R.id.nav_login) {
+            startActivity(new Intent(MainActivity.this, LoginActivity.class));
+        }
 
         if (id1 == R.id.nav_register) {
-            Log.d("NAV_DRAWER", "Przechodzę do RegisterActivity");
             startActivity(new Intent(MainActivity.this, RegisterActivity.class));
         }
 
