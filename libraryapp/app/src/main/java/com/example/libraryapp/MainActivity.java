@@ -2,7 +2,9 @@ package com.example.libraryapp;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.util.Log;
+import android.view.MenuItem;
 import android.widget.AdapterView;
 import android.widget.ListView;
 import android.widget.Toast;
@@ -12,6 +14,7 @@ import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.google.android.material.navigation.NavigationView;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -24,16 +27,25 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
-
-    private static final String BOOKS_URL = "http://10.0.2.2:5000/api/books";
+//----------------------------------------------
+    //-----------------------------------------
+    //SPOWROTEM IP DLA DOCKERÓW
+    //-------------------------------------------------------
+    //-----------------------------------------------
+    private static final String BOOKS_URL = "http://192.168.1.3:5000/api/books";
 
     private ListView lvBooks;
     private final List<Book> books = new ArrayList<>();
+    private DrawerLayout drawerLayout;
+    private NavigationView navigationView;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        navigationView = findViewById(R.id.nav_view);
+        navigationView.setNavigationItemSelectedListener(this::onNavigationItemSelected);
         lvBooks = findViewById(R.id.lvBooks);
 
         // Kliknięcie w element listy → DetailActivity
@@ -50,11 +62,24 @@ public class MainActivity extends AppCompatActivity {
 
         DrawerLayout drawerLayout = findViewById(R.id.drawer_layout);
         FloatingActionButton fab = findViewById(R.id.fabMenu);
-
         fab.setOnClickListener(v -> drawerLayout.openDrawer(GravityCompat.END));
 
         // Pobranie listy książek z API
         fetchBooks();
+    }
+
+    private boolean onNavigationItemSelected(@NonNull MenuItem item) {
+        int id1 = item.getItemId();
+        Log.d("NAV_DRAWER", "Kliknięto opcję: " + id1);
+
+
+        if (id1 == R.id.nav_register) {
+            Log.d("NAV_DRAWER", "Przechodzę do RegisterActivity");
+            startActivity(new Intent(MainActivity.this, RegisterActivity.class));
+        }
+
+        drawerLayout.closeDrawers();
+        return true;
     }
 
     private void fetchBooks() {

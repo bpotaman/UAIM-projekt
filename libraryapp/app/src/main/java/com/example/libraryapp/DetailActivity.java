@@ -64,7 +64,11 @@ public class DetailActivity extends AppCompatActivity {
             if (imageUrl != null && !imageUrl.isEmpty()) {
                 // backend zwraca "http://localhost:5000...", więc na emulatorze zamieniamy na 10.0.2.2
 //                String fixedUrl = imageUrl.replace("http://localhost:5000", "http://10.0.2.2:5000");
-                String coverUrl = "http://10.0.2.2:5000/api/books/" + bookId + "/cover";
+
+                //--------------------------------------------------------
+                //DO ZMIANY URL SPOWROTEM NA 10.0.2.2
+                //--------------------------------------------------------
+                String coverUrl = "http://192.168.1.3:5000/api/books/" + bookId + "/cover";
                 Picasso.get()
                         .load(coverUrl)
                         .into(ivImageDetail);
