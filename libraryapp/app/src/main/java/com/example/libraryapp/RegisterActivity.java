@@ -23,7 +23,7 @@ public class RegisterActivity extends AppCompatActivity {
     //SPOWROTEM NA IP DLA DOCKEROW
     //-----------------------------------------------------------
     //--------------------------------------------
-    private static final String REGISTER_URL = "http://192.168.1.3:5000/api/register";
+    private static final String REGISTER_URL = "http://10.0.2.2:5000/api/register";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
